@@ -1,9 +1,9 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
+const axios = require('axios');
 
-// This method is called when your extension is activated
-// Your extension is activated the very first time the command is executed
+
 
 function divide_file(editor){
 	// Get the content of the active file
@@ -42,9 +42,42 @@ function divide_file(editor){
 	return {file_parts:functions,line_numbers:line_numbers};
 }
 
+function format(data,maxCharsPerLine=80){
+	const words = data.split(' ');
+	let line = '';
+	const lines = [];
+	for (let i = 0; i < words.length; i++) {
+		const word = words[i];
+		if (line.length + word.length <= maxCharsPerLine) {
+		line += word + ' ';
+		} else {
+		lines.push('#'+line.trim());
+		line = word + ' ';
+		}
+	}
+	if (line.length > 0) {
+		lines.push('#'+line.trim());
+	}
+	return lines.join('\n');
+} 
+
+async function get_summary(code){
+	const {data} = await axios.get('https://baconipsum.com/api/?type=meat-and-filler&format=text&paras=1')  
+	return format(data); 
+} 
+function get_summaries(file){
+	let promises = [] 
+
+	for(let i=0;i<file.length;++i){
+		promises.push(get_summary(file[i]));
+	} 
+	return Promise.all(promises);
+}
 /**
  * @param {vscode.ExtensionContext} context
  */
+// This method is called when your extension is activated
+// Your extension is activated the very first time the command is executed
 function activate(context) {
 
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
@@ -54,44 +87,30 @@ function activate(context) {
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
 	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('summarizer.helloWorld', function () {
+	let disposable = vscode.commands.registerCommand('summarizer.helloWorld', async function () {
 		// The code you place here will be executed every time your command is executed 
 
 		const editor = vscode.window.activeTextEditor;
 		if (editor) {
 			const document = editor.document;
 			const {file_parts,line_numbers} = divide_file(editor);
-			 
 
-			for(let i=0;i<file_parts.length;++i){
-				console.log(`Part ${i+1}`); 
-				console.log(`From ${line_numbers[i][0]} to ${line_numbers[i][1]}`); 
-				console.log(file_parts[i]);
-			} 
-			const customLines = [
-				{ line: '#Custom line 1\n#Custom lines custom lines\n#custom lines'},
-				{ line: '#Custom line 2\n#Custom lines custom lines\n#custom lines'}, 
-				{ line: '#Custom line 3\n#Custom lines custom lines\n#custom lines'},  
-				{ line: '#Custom line 4\n#Custom lines custom lines\n#custom lines'}, 
-				{ line: '#Custom line 5\n#Custom lines custom lines\n#custom lines'}
-			];
-			
+			const summaries = await get_summaries(file_parts);
+
 			// Create a TextEditorEdit object to make changes to the editor
 			const edit = new vscode.WorkspaceEdit(); 
 
-			for(let i=0;i<customLines.length;++i){
+			for(let i=0;i<summaries.length;++i){
 				let prev = 0; 
 				if(i-1>=0){
 					prev = line_numbers[i-1][1];
 				}
-				edit.insert(document.uri, new vscode.Position(prev, 0), customLines[i].line + '\n');
+				edit.insert(document.uri, new vscode.Position(prev, 0), summaries[i]+ '\n');
 			}
 			
 			// Apply the edit to the editor
-			vscode.workspace.applyEdit(edit);
+			vscode.workspace.applyEdit(edit); 
 		}
-		
-	
 		// Display a message box to the user
 		vscode.window.showInformationMessage('Hello World from AMAN BEDI v1.2');
 	});
