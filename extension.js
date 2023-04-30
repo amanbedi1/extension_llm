@@ -79,11 +79,11 @@ async function get_summary(code){
 		if(response.choices && response.choices.length>0){
 			return format(response.choices[0]); 
 		} 
-		return "NO SUMMARY"
+		return format("NO SUMMARY");
 		
 	} catch(err){
 		console.log(err); 
-		return "NO SUMMARY";
+		return format("NO SUMMARY");
 	}  
 
 
