@@ -3,8 +3,6 @@
 const vscode = require('vscode');
 const axios = require('axios');
 
-
-
 function divide_file(editor){
 	// Get the content of the active file
 	const document = editor.document;
@@ -60,11 +58,30 @@ function format(data,maxCharsPerLine=80){
 	}
 	return lines.join('\n');
 } 
-
-async function get_summary(code){
-	const {data} = await axios.get('https://baconipsum.com/api/?type=meat-and-filler&format=text&paras=1')  
-	return format(data); 
+// Function needs to modify to get a particular field
+async function get_summary(code){ 
+	// needs work
+	// const options = {
+	// 	headers: {
+	// 		'Content-Type': 'application/json',
+	// 		'Authorization': 'Bearer <OPEN_API_KEY>'
+	// 	  },
+	// 	data: {
+	// 		'model': 'gpt-3.5-turbo',
+	// 		'messages':[{"role":"user","content":`summarize this code snippet \n${code}`}]
+	// 	}		
+	// }
+	// try{
+	// 	const response = await axios.post('https://api.openai.com/v1/chat/completions')  
+	// 	console.log(response) 
+	// } catch(err){
+	// 	console.log(err)
+	// } 
+    // random api endpoint to get a text
+	const {data} = await axios.get('https://baconipsum.com/api/?type=meat-and-filler&paras=1&format=text'); 
+	return format(data);
 } 
+// Function needs to modify to get a particular field as of above function
 function get_summaries(file){
 	let promises = [] 
 
@@ -73,6 +90,7 @@ function get_summaries(file){
 	} 
 	return Promise.all(promises);
 }
+
 /**
  * @param {vscode.ExtensionContext} context
  */
@@ -87,7 +105,7 @@ function activate(context) {
 	// The command has been defined in the package.json file
 	// Now provide the implementation of the command with  registerCommand
 	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('summarizer.helloWorld', async function () {
+	let disposable = vscode.commands.registerCommand('summarizer.summarize', async function () {
 		// The code you place here will be executed every time your command is executed 
 
 		const editor = vscode.window.activeTextEditor;
@@ -109,7 +127,7 @@ function activate(context) {
 			}
 			
 			// Apply the edit to the editor
-			vscode.workspace.applyEdit(edit); 
+			vscode.workspace.applyEdit(edit);  
 		}
 		// Display a message box to the user
 		vscode.window.showInformationMessage('Hello World from AMAN BEDI v1.2');

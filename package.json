@@ -14,8 +14,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "summarizer.helloWorld",
-        "title": "Hello World"
+        "command": "summarizer.summarize",
+        "title": "summarize"
       }
     ]
   },
