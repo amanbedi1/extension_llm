@@ -3,6 +3,9 @@
 const vscode = require('vscode');
 const axios = require('axios');
 
+// xxxxx needs to change on the ip of vm.
+const URL = 'http://{xxxxxxxx}/v1/chat/completions'; 
+
 function divide_file(editor){
 	// Get the content of the active file
 	const document = editor.document;
@@ -60,26 +63,33 @@ function format(data,maxCharsPerLine=80){
 } 
 // Function needs to modify to get a particular field
 async function get_summary(code){ 
-	// needs work
-	// const options = {
-	// 	headers: {
-	// 		'Content-Type': 'application/json',
-	// 		'Authorization': 'Bearer <OPEN_API_KEY>'
-	// 	  },
-	// 	data: {
-	// 		'model': 'gpt-3.5-turbo',
-	// 		'messages':[{"role":"user","content":`summarize this code snippet \n${code}`}]
-	// 	}		
-	// }
-	// try{
-	// 	const response = await axios.post('https://api.openai.com/v1/chat/completions')  
-	// 	console.log(response) 
-	// } catch(err){
-	// 	console.log(err)
-	// } 
-    // random api endpoint to get a text
-	const {data} = await axios.get('https://baconipsum.com/api/?type=meat-and-filler&paras=1&format=text'); 
-	return format(data);
+	// needs work 
+	const options = {
+		headers: {
+			'Content-Type': 'application/json',
+		  },
+		data: {
+			'model': 'vicuna-13b-v1.1',
+			'messages':[{"role":"user","content":`summarize this code snippet \n${code}`}]
+		}		
+	}
+	try{
+		const response = await axios.post(URL); 
+		
+		if(response.choices && response.choices.length>0){
+			return format(response.choices[0]); 
+		} 
+		return "NO SUMMARY"
+		
+	} catch(err){
+		console.log(err); 
+		return "NO SUMMARY";
+	}  
+
+
+    // // random api endpoint to get a text
+	// const {data} = await axios.get('https://baconipsum.com/api/?type=meat-and-filler&paras=1&format=text'); 
+	// return format(data);
 } 
 // Function needs to modify to get a particular field as of above function
 function get_summaries(file){
@@ -143,3 +153,12 @@ module.exports = {
 	activate,
 	deactivate
 }
+
+
+
+// {"id":"3iysMY3Br6gaf8VD4kS6zZ",
+// "object":"chat.completion",
+// "created":1682891941,
+// "choices":[{"index":0,"message":{"role":"assistant","content":"Hello! How can I help you today?"},"finish_reason":"stop"}],
+// "usage":null}(base)
+
